@@ -50,3 +50,4 @@ class TestUrbanRoutes:
     def teardown_class(cls):
         logging.info("Closing the browser.")
         cls.driver.quit()
+
