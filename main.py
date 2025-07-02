@@ -1,63 +1,91 @@
-import logging
-from selenium import webdriver
-
 import data
 import helpers
+from selenium import webdriver
+from pages import UrbanRoutesPage
+
+# URBAN_ROUTES_URL imports from data
+# Check if the server is running due to Urban Routes server expiring often
 
 class TestUrbanRoutes:
-
     @classmethod
     def setup_class(cls):
-        if not helpers.is_url_reachable(data.URBAN_ROUTES_URL):
-            raise Exception("Server is not reachable. Aborting tests.")
-        from selenium.webdriver.chrome.options import Options
-        chrome_options = Options()
-        chrome_options.set_capability("goog:loggingPrefs", {'performance': 'ALL'})
-        cls.driver = webdriver.Chrome(options=chrome_options)
+        from selenium.webdriver import DesiredCapabilities
+        capabilities = DesiredCapabilities.CHROME
+        capabilities["goog:loggingPrefs"] = {'performance': 'ALL'}
+        cls.driver = webdriver.Chrome()
+        cls.driver.implicitly_wait(5)
+        url = data.URBAN_ROUTES_URL
+        if helpers.is_url_reachable(url):
+            print("Connected to the Urban Routes server")
+        else:
+            print("Cannot connect to Urban Routes. Check the server is on and still running")
+
+    # Each function has a 'self' parameter
 
     def test_set_route(self):
-        # Add in S8
-        print("Test set route")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        assert routes_page.get_from() == data.ADDRESS_FROM
+        assert routes_page.get_to() == data.ADDRESS_TO
 
     def test_select_plan(self):
-        # Add in S8
-        print("Test select plan")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        routes_page.select_supportive_plan()
+        assert routes_page.get_current_selected_plan() == 'Supportive'
 
     def test_fill_phone_number(self):
-        # Add in S8
-        print("Test phone number")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        phone_number = data.PHONE_NUMBER
+        routes_page.set_phone(phone_number)
+        assert routes_page.get_phone() == data.PHONE_NUMBER
 
     def test_fill_card(self):
-        # Add in S8
-        print("Test fill card")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        routes_page.set_card(data.CARD_NUMBER, data.CARD_CODE)
+        assert routes_page.get_current_payment_method() == 'Card'
 
     def test_comment_for_driver(self):
-        # Add in S8
-        print("Test for driver")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        message = data.MESSAGE_FOR_DRIVER
+        routes_page.set_message_for_driver(message)
+        assert routes_page.get_message_for_driver() == message
 
     def test_order_blanket_and_handkerchiefs(self):
-        # Add in S8
-        print("Test order blanket and handkerchiefs")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        routes_page.select_supportive_plan()
+        routes_page.click_blanket_and_handkerchiefs_option()
+        assert routes_page.get_blanket_and_handkerchiefs_option_checked()
 
+    # uses a range loop and a pass statement
     def test_order_2_ice_creams(self):
-        # Add in S8
-        print("Test order 2 ice creams")
-        for i in range(2):
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        routes_page.select_supportive_plan()
+        number_of_ice_creams = 2
+        routes_page.add_ice_cream(number_of_ice_creams)
+        assert routes_page.get_amount_of_ice_cream() == 2
 
     def test_car_search_model_appears(self):
-        # Add in S8
-        print("Test search model")
-        pass
+        self.driver.get(data.URBAN_ROUTES_URL)
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.set_route(data.ADDRESS_FROM, data.ADDRESS_TO)
+        message = data.MESSAGE_FOR_DRIVER
+        routes_page.set_message_for_driver(message)
+        routes_page.click_order_taxi_button()
+        assert routes_page.is_order_taxi_popup()
 
     @classmethod
     def teardown_class(cls):
-        logging.info("Closing the browser.")
         cls.driver.quit()
-
